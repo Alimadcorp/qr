@@ -73,8 +73,10 @@
             qrElem.innerHTML = ""; // Clear previous QR Code
             new QRCode(qrElem, {
                 text: text,
-                width: 1024,
-                height: 1024
+                width: 512,
+                height: 512,
+                correctLevel: QRCode.CorrectLevel.L, // lower error correction for more capacity
+                version: 40 // max version, highest capacity
             });
             document.getElementById('urlText').innerText = text; // Display URL below QR Code
             document.getElementById('downloadButton').style.display = 'block'; // Show download button
