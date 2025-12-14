@@ -1,4 +1,3 @@
-// Service Worker Implementation
 const CACHE_NAME = 'qr-code-generator-v1';
 const relFilesToCache = [
   'index.html',
@@ -14,8 +13,6 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache');
-        // now, we want to modify the relFilesToCache to include the path 
-        // as a prefix
         const cacheUrls = relFilesToCache.map(
           fileName => new URL(fileName, loc).pathname
         );

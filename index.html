@@ -17,8 +17,15 @@
     <script src="js/qrcode.min.js"></script>
     
     <style>
+        body {
+            overflow-x: hidden;
+            background-color: black;
+            color: white;
+        }
         #qrcode {
             margin-top: 15px;
+            padding: 20px;
+            background-color: white;
         }
         #qrcode > img {
             max-width: 100%;
@@ -37,7 +44,8 @@
             position: fixed;
             bottom: 0;
             width: 100%;
-            background-color: #f8f9fa;
+            background-color: #00000055;
+            backdrop-filter: blur(5px);
             padding: 1em;
         }
         .footer > p {
@@ -58,11 +66,9 @@
         </div>
         <div id="qrcode" class="d-flex justify-content-center"></div>
         <br>
-        <h5 id="urlText" class="text-center"></h5>
-        <br>
         <div class="d-flex justify-content-center" style="margin-bottom: 50px;">
             <button id="downloadButton" class="btn btn-outline-primary btn-lg" type="button" onclick="downloadQRCode()"
-                style="display: none;">Download ⬇️</button>
+                style="display: none;">Download</button>
         </div>
         <br>
     </div>
@@ -70,16 +76,15 @@
         function generateQRCode() {
             const text = document.getElementById('text').value;
             const qrElem = document.getElementById('qrcode');
-            qrElem.innerHTML = ""; // Clear previous QR Code
+            qrElem.innerHTML = "";
             new QRCode(qrElem, {
                 text: text,
                 width: 512,
                 height: 512,
-                correctLevel: QRCode.CorrectLevel.L, // lower error correction for more capacity
-                version: 40 // max version, highest capacity
+                correctLevel: QRCode.CorrectLevel.L,
+                version: 40
             });
-            document.getElementById('urlText').innerText = text; // Display URL below QR Code
-            document.getElementById('downloadButton').style.display = 'block'; // Show download button
+            document.getElementById('downloadButton').style.display = 'block';
         }
         function generateQRCodePress() {
             if (event.key === 'Enter') {
@@ -116,7 +121,7 @@
     <div class="footer">
         <p class="text-center">
             Built with <a href="https://davidshimjs.github.io/qrcodejs/" target="_blank">qrcode.js</a>
-            and <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a>. Get <a href="https://github.com/xhluca/qr-code">source code</a>.
+            and <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a>. Get <a href="https://github.com/Alimadcorp/qr">source code</a>.
         </p>
     </div>
 </footer>
