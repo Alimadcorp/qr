@@ -3,182 +3,483 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="application-name" content="QR Code Generator" />
-
-    <title>QR Code Generator</title>
-
     <link rel="stylesheet" href="css/bootstrap.min.css" />
-    <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="icons/favicon.ico" type="image/x-icon" />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="icons/favicon-32x32.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="icons/apple-touch-icon.png"
-    />
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
     <script src="js/qrcode.min.js"></script>
-
+    <title>QR Code Generator</title>
+    <link rel="icon" href="https://cdn.alimad.co/f/static/qr.alimad.co">
+    <meta name="description" content="Free, open source, fast, convenient, on-the-go, ads-free QR code generator. Supports all 9 QR syntaxes, PNG, SVG, client and server side rendering, color customization and more!">
+    <meta property="og:url" content="https://qr.alimad.co">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="QR Code Generator">
+    <meta property="og:description" content="Free, open source, fast, convenient, on-the-go, ads-free QR code generator. Supports all 9 QR syntaxes, PNG, SVG, client and server side rendering, color customization and more!">
+    <meta property="og:image" content="https://cdn.alimad.co/f/static/qr.alimad.co">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="twitter:domain" content="qr.alimad.co">
+    <meta property="twitter:url" content="https://qr.alimad.co">
+    <meta name="twitter:title" content="QR Code Generator">
+    <meta name="twitter:description" content="Free, open source, fast, convenient, on-the-go, ads-free QR code generator. Supports all 9 QR syntaxes, PNG, SVG, client and server side rendering, color customization and more!">
+    <meta name="twitter:image" content="https://cdn.alimad.co/f/static/qr.alimad.co">
     <style>
-      @font-face {
-        font-family: "Geist", "sans-serif";
-        src: url("https://corsproxy.io/?url=cdn.alimad.co/f/Geist.woff2");
-      }
       body {
-        overflow-x: hidden;
-        font-family: "Geist";
-        background-color: black;
-        color: white;
+        background: #000;
+        color: #fff;
+        font-family: Geist, sans-serif;
       }
-      #qrcode {
-        margin-top: 15px;
-        padding: 20px;
-        background-color: white;
+      .card {
+        background: #111;
+        border-radius: 16px;
       }
-      #qrcode > img {
-        max-width: 100%;
-        max-height: 80%;
-        image-rendering: pixelated;
+      .form-label {
+        font-size: 0.85rem;
+        color: #aaa;
       }
-      #qrcode > canvas {
-        max-width: 100%;
-        max-height: 80%;
+      .color-picker {
+        display: flex;
+        gap: 8px;
+        align-items: center;
       }
-      input {
-        background-color: black;
+      .color-picker input {
+        text-transform: uppercase;
+        font-family: monospace;
       }
-      .container {
-        padding-top: 20px;
+      .swatch {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #000;
+        border: 2px solid #333;
+        cursor: pointer;
       }
-
-      .footer {
-        position: fixed;
-        bottom: 0;
+      .swatch.light {
+        background: #fff;
+      }
+      input,
+      select {
+        background: #000;
+        color: #fff;
+        border: 1px solid #333;
+      }
+      #preview {
+        background: #fff;
+        padding: 16px;
         width: 100%;
-        background-color: #000000aa;
-        backdrop-filter: blur(5px);
-        padding: 1em;
+        max-width: 100%;
+        box-sizing: border-box;
+        text-align: center;
       }
-      .footer > p {
-        margin-bottom: 0;
+      #preview img,
+      #preview canvas {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        margin: 16px auto;
+      }
+      .d-flex.justify-content-end > *:not(:last-child) {
+        margin-right: 12px;
       }
     </style>
   </head>
-
   <body>
-    <div class="container">
-      <h1 class="text-center">QR Code Generator</h1>
-      <div class="input-group mb-3">
-        <input
-          id="text"
-          type="text"
-          class="form-control bg-dark text-white"
-          placeholder="Enter URL/Text here"
-          aria-label="URL/Text for creating QR code"
-          aria-describedby="basic-addon2"
-          onkeypress="generateQRCodePress()"
-          oninput="generateQRCode()"
-        />
-      </div>
-      <div class="input-group-append">
+    <div class="container py-4">
+      <h1 class="text-center mb-4">Create QR Code</h1>
+      <div class="card p-4 mb-4">
+        <input id="data" class="form-control mb-4" placeholder="Text / URL" />
+        <div id="extra-fields" class="mb-3"></div>
         <button
-          class="btn btn-outline-primary bg-primary text-white invisible"
-          type="button"
-          onclick="generateQRCode()"
+          class="btn btn-sm btn-outline-secondary mb-3"
+          data-bs-toggle="collapse"
+          data-bs-target="#advanced"
         >
-          Generate
+          Options
         </button>
+        <div id="advanced" class="collapse">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Size</label>
+              <input id="size" type="number" class="form-control" value="512" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Format</label>
+              <select id="format" class="form-control">
+                <option value="png">PNG</option>
+                <option value="svg">SVG</option>
+              </select>
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Mode</label>
+              <select id="mode" class="form-control">
+                <option value="text">Text</option>
+                <option value="url">URL</option>
+                <option value="email">Email</option>
+                <option value="location">Location</option>
+                <option value="telephone">Telephone</option>
+                <option value="vcard">VCard</option>
+                <option value="sms">SMS</option>
+                <option value="event">Event</option>
+                <option value="wifi">WiFi</option>
+              </select>
+            </div>
+          </div>
+          <div class="row g-3 align-items-end mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Dark Color</label>
+              <div class="color-picker">
+                <div class="swatch" data-target="dark"></div>
+                <input
+                  id="dark"
+                  type="text"
+                  class="form-control"
+                  value="#000000"
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Light Color</label>
+              <div class="color-picker">
+                <div class="swatch light" data-target="light"></div>
+                <input
+                  id="light"
+                  type="text"
+                  class="form-control"
+                  value="#ffffff"
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check mt-4">
+                <input
+                  id="transparent"
+                  class="form-check-input"
+                  type="checkbox"
+                />
+                <label class="form-check-label">Transparent background</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button
+            id="generate"
+            class="btn btn-warning me-2"
+            style="display: none"
+            onclick="generateQR()"
+          >
+            Generate
+          </button>
+          <a id="download" class="btn btn-primary" download>Download</a>
+        </div>
       </div>
-      <div id="qrcode" class="d-flex justify-content-center invisible"></div>
-      <br />
-      <div class="d-flex justify-content-center" style="margin-bottom: 50px">
-        <button
-          id="downloadButton"
-          class="btn btn-outline-primary btn-lg"
-          type="button"
-          onclick="downloadQRCode()"
-          style="display: none"
-        >
-          Download
-        </button>
+      <div class="text-center">
+        <div id="preview"></div>
       </div>
-      <br />
     </div>
     <script>
-      function generateQRCode() {
-        const text = document.getElementById("text").value;
-        const qrElem = document.getElementById("qrcode");
-        if (text) {
-          qrElem.classList.remove("invisible");
-        } else {
-          qrElem.classList.add("invisible");
+      const LIVE_LIMIT = 200;
+      const els = [
+        "data",
+        "size",
+        "format",
+        "dark",
+        "light",
+        "transparent",
+      ].reduce((o, i) => ((o[i] = document.getElementById(i)), o), {});
+      const preview = document.getElementById("preview");
+      const download = document.getElementById("download");
+      const generateBtn = document.getElementById("generate");
+      let qr;
+      function needsManual() {
+        return els.format.value === "svg" || els.data.value.length > LIVE_LIMIT;
+      }
+      function updateUIState() {
+        generateBtn.style.display = needsManual() ? "inline-block" : "none";
+      }
+      const extraFields = document.getElementById("extra-fields");
+      els.mode = document.getElementById("mode");
+      function renderExtraFields(mode) {
+        extraFields.innerHTML = "";
+        switch (mode) {
+          case "email":
+            extraFields.innerHTML = `
+        <input id="email-to" class="form-control mb-2" placeholder="Email address" />
+        <input id="email-subject" class="form-control mb-2" placeholder="Subject (optional)" />
+        <textarea id="email-body" class="form-control" placeholder="Body (optional)"></textarea>
+      `;
+            break;
+          case "location":
+            extraFields.innerHTML = `
+        <input id="lat" class="form-control mb-2" placeholder="Latitude" />
+        <input id="lng" class="form-control" placeholder="Longitude" />
+      `;
+            break;
+          case "telephone":
+            extraFields.innerHTML = `<input id="phone" class="form-control" placeholder="Telephone number" />`;
+            break;
+          case "sms":
+            extraFields.innerHTML = `
+        <input id="sms-number" class="form-control mb-2" placeholder="Number" />
+        <textarea id="sms-message" class="form-control" placeholder="Message"></textarea>
+      `;
+            break;
+          case "wifi":
+            extraFields.innerHTML = `
+        <input id="wifi-ssid" class="form-control mb-2" placeholder="SSID" />
+        <input id="wifi-password" class="form-control mb-2" placeholder="Password" />
+        <select id="wifi-encryption" class="form-control">
+          <option value="WPA">WPA/WPA2</option>
+          <option value="WEP">WEP</option>
+          <option value="nopass">None</option>
+        </select>
+      `;
+            break;
+          case "vcard":
+            extraFields.innerHTML = `
+        <input id="vcard-name" class="form-control mb-2" placeholder="Full Name" />
+        <input id="vcard-org" class="form-control mb-2" placeholder="Organization" />
+        <input id="vcard-email" class="form-control mb-2" placeholder="Email" />
+        <input id="vcard-phone" class="form-control" placeholder="Phone" />
+      `;
+            break;
+          case "event":
+            extraFields.innerHTML = `
+        <input id="event-title" class="form-control mb-2" placeholder="Title" />
+        <input id="event-start" type="datetime-local" class="form-control mb-2" placeholder="Start" />
+        <input id="event-end" type="datetime-local" class="form-control" placeholder="End" />
+      `;
+            break;
         }
-        qrElem.innerHTML = "";
-        new QRCode(qrElem, {
-          text: text,
-          width: 512,
-          height: 512,
-          correctLevel: QRCode.CorrectLevel.M,
-          version: 40,
-        });
-        document.getElementById("downloadButton").style.display = "block";
+        updateMainInput();
       }
-      function generateQRCodePress() {
-        if (event.key === "Enter") {
-          generateQRCode();
+      function updateMainInput() {
+        const mode = els.mode.value;
+        const raw = validateMode("", mode); // generate raw string from current extra fields
+        if (raw) els.data.value = raw;
+      }
+      function validateMode(text, mode) {
+        try {
+          switch (mode) {
+            case "text":
+              return text;
+            case "url":
+              new URL(text);
+              return text;
+            case "email":
+              const to = document.getElementById("email-to")?.value.trim();
+              const subject =
+                document.getElementById("email-subject")?.value || "";
+              const body = document.getElementById("email-body")?.value || "";
+              if (!/\S+@\S+\.\S+/.test(to)) return null;
+              return `mailto:${to}?subject=${encodeURIComponent(
+                subject
+              )}&body=${encodeURIComponent(body)}`;
+            case "location":
+              const lat = document.getElementById("lat")?.value.trim();
+              const lng = document.getElementById("lng")?.value.trim();
+              if (!lat || !lng) return null;
+              return `geo:${lat},${lng}`;
+            case "telephone":
+              const phone = document.getElementById("phone")?.value.trim();
+              if (!phone) return null;
+              return `tel:${phone}`;
+            case "sms":
+              const num = document.getElementById("sms-number")?.value.trim();
+              const msg = document.getElementById("sms-message")?.value.trim();
+              if (!num) return null;
+              return `SMSTO:${num}:${msg}`;
+            case "wifi":
+              const ssid = document.getElementById("wifi-ssid")?.value.trim();
+              const pass = document
+                .getElementById("wifi-password")
+                ?.value.trim();
+              const enc =
+                document.getElementById("wifi-encryption")?.value || "WPA";
+              if (!ssid) return null;
+              return `WIFI:T:${enc};S:${ssid};P:${pass};;`;
+            case "vcard":
+              const name = document.getElementById("vcard-name")?.value.trim();
+              if (!name) return null;
+              const org = document.getElementById("vcard-org")?.value.trim();
+              const email = document
+                .getElementById("vcard-email")
+                ?.value.trim();
+              const phoneV = document
+                .getElementById("vcard-phone")
+                ?.value.trim();
+              return `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nORG:${org}\nEMAIL:${email}\nTEL:${phoneV}\nEND:VCARD`;
+            case "event":
+              const title = document
+                .getElementById("event-title")
+                ?.value.trim();
+              const start = document.getElementById("event-start")?.value;
+              const end = document.getElementById("event-end")?.value;
+              if (!title || !start) return null;
+              return `BEGIN:VEVENT\nSUMMARY:${title}\nDTSTART:${start.replace(
+                /[-:]/g,
+                ""
+              )}\nDTEND:${end.replace(/[-:]/g, "")}\nEND:VEVENT`;
+            default:
+              return text;
+          }
+        } catch {
+          return null;
         }
       }
-    </script>
-    <script>
-      function downloadQRCode() {
-        const canvas = document
-          .getElementById("qrcode")
-          .querySelector("canvas");
-        const url = canvas
-          .toDataURL("image/png")
-          .replace("image/png", "image/octet-stream");
-        const link = document.createElement("a");
-        link.download = "qrcode.png";
-        link.href = url;
-        link.click();
-      }
-    </script>
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          const swName = "service-worker.js";
-          const swPath = new URL(swName, window.location).pathname;
-          navigator.serviceWorker.register(swPath).then(
-            (registration) => {
-              console.log(
-                "ServiceWorker registration successful with scope: ",
-                registration.scope
-              );
-            },
-            (err) => {
-              console.log("ServiceWorker registration failed: ", err);
+      extraFields.addEventListener("input", () => {
+        updateMainInput();
+        autoGenerate();
+      });
+      els.mode.addEventListener("change", () => {
+        renderExtraFields(els.mode.value);
+        autoGenerate();
+      });
+      function validateMode(text, mode) {
+        switch (mode) {
+          case "text":
+            return text;
+          case "url":
+            try {
+              new URL(text);
+              return text;
+            } catch {
+              return null;
             }
-          );
-        });
+          case "email":
+            const to = document.getElementById("email-to").value.trim();
+            if (!/\S+@\S+\.\S+/.test(to)) {
+              return null;
+            }
+            const subject = document.getElementById("email-subject").value;
+            const body = document.getElementById("email-body").value;
+            return `mailto:${to}?subject=${encodeURIComponent(
+              subject
+            )}&body=${encodeURIComponent(body)}`;
+          case "location":
+            const lat = document.getElementById("lat").value.trim();
+            const lng = document.getElementById("lng").value.trim();
+            if (!/^(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)$/.test(`${lat},${lng}`)) {
+              return null;
+            }
+            return `geo:${lat},${lng}`;
+          case "telephone":
+            const phone = document.getElementById("phone").value.trim();
+            if (!/^\+?\d[\d\s-]{4,}$/.test(phone)) {
+              return null;
+            }
+            return `tel:${phone}`;
+          case "sms":
+            const num = document.getElementById("sms-number").value.trim();
+            const msg = document.getElementById("sms-message").value.trim();
+            if (!num) {
+              return null;
+            }
+            return `SMSTO:${num}:${msg}`;
+          case "wifi":
+            const ssid = document.getElementById("wifi-ssid").value.trim();
+            const pass = document.getElementById("wifi-password").value.trim();
+            const enc = document.getElementById("wifi-encryption").value;
+            if (!ssid) {
+              return null;
+            }
+            return `WIFI:T:${enc};S:${ssid};P:${pass};;`;
+          case "vcard":
+            const name = document.getElementById("vcard-name").value.trim();
+            const org = document.getElementById("vcard-org").value.trim();
+            const email = document.getElementById("vcard-email").value.trim();
+            const vphone = document.getElementById("vcard-phone").value.trim();
+            if (!name) {
+              return null;
+            }
+            return `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nORG:${org}\nEMAIL:${email}\nTEL:${vphone}\nEND:VCARD`;
+          case "event":
+            const title = document.getElementById("event-title").value.trim();
+            const start = document.getElementById("event-start").value;
+            const end = document.getElementById("event-end").value;
+            if (!title || !start) {
+              return null;
+            }
+            return `BEGIN:VEVENT\nSUMMARY:${title}\nDTSTART:${start.replace(
+              /[-:]/g,
+              ""
+            )}\nDTEND:${end.replace(/[-:]/g, "")}\nEND:VEVENT`;
+          default:
+            return text;
+        }
       }
+      function generateQR() {
+        const mode = els.mode.value;
+        let text = els.data.value.trim();
+        text = validateMode(text, mode);
+        if (!text) {
+          preview.innerHTML = "";
+          download.removeAttribute("href");
+          return;
+        }
+        const size = +els.size.value;
+        const dark = els.dark.value;
+        const light = els.transparent.checked ? "#00000000" : els.light.value;
+        const name = els.data.value.slice(0, 30).replace(/[^a-z0-9]/gi, "_");
+        preview.innerHTML = "";
+        if (els.format.value === "png") {
+          qr = new QRCode(preview, {
+            text,
+            width: size,
+            height: size,
+            colorDark: dark,
+            colorLight: light,
+            correctLevel: QRCode.CorrectLevel.M,
+          });
+          setTimeout(() => {
+            const canvas = preview.querySelector("canvas");
+            download.href = canvas.toDataURL("image/png");
+            download.download = `${name}.png`;
+          }, 0);
+          return;
+        }
+        const p = new URLSearchParams({
+          data: text,
+          size,
+          format: "svg",
+          dark,
+        });
+        if (els.transparent.checked) p.set("transparent", "1");
+        else p.set("light", light);
+        const url = `https://alimad.co/qr?${p.toString()}`;
+        preview.innerHTML = `<img src="${url}" class="qr-img">`;
+        download.href = url;
+        download.download = `${name}.svg`;
+      }
+      els.mode.addEventListener("change", autoGenerate);
+      function autoGenerate() {
+        updateUIState();
+        if (!needsManual()) generateQR();
+      }
+      els.data.addEventListener("input", autoGenerate);
+      els.size.addEventListener("input", autoGenerate);
+      els.format.addEventListener("change", autoGenerate);
+      els.transparent.addEventListener("change", autoGenerate);
+      els.dark.addEventListener("change", autoGenerate);
+      els.light.addEventListener("change", autoGenerate);
+      document.querySelectorAll(".swatch").forEach((swatch) => {
+        const input = document.getElementById(swatch.dataset.target);
+        function sync() {
+          swatch.style.background = input.value;
+        }
+        sync();
+        swatch.onclick = () => {
+          const picker = document.createElement("input");
+          picker.type = "color";
+          picker.value = input.value;
+          picker.onchange = () => {
+            input.value = picker.value;
+            sync();
+            input.dispatchEvent(new Event("change"));
+          };
+          picker.click();
+        };
+        input.addEventListener("change", sync);
+      });
     </script>
   </body>
-
-  <footer>
-    <div class="footer">
-      <p class="text-center">
-        Built with
-        <a href="https://davidshimjs.github.io/qrcodejs/" target="_blank"
-          >qrcode.js</a
-        >
-        and <a href="https://getbootstrap.com/" target="_blank">Bootstrap</a>.
-        Get <a href="https://github.com/Alimadcorp/qr">source code</a>.
-      </p>
-    </div>
-  </footer>
 </html>
