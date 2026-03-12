@@ -1,6 +1,8 @@
 # QR Code Generator
 
 A simple QR code generator that allows you to generate QR codes for any text you input.
+MY Additions:
+Runs in realtime hwuahwuahuwahuwha and got an api too
 
 
 ![QR Code Generator](./assets/sample.png)
