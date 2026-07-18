@@ -407,6 +407,8 @@
             return text;
         }
       }
+
+      let w = false;
       function generateQR() {
         const mode = els.mode.value;
         let text = els.data.value.trim();
@@ -415,6 +417,10 @@
           preview.innerHTML = "";
           download.removeAttribute("href");
           return;
+        }
+        if(!w) {
+          alert("7."); alert("1410e2e4"); alert("next: back to / again")
+          w = true;
         }
         const size = +els.size.value;
         const dark = els.dark.value;
